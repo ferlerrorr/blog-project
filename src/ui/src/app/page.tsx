@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState, type JSX } from "react";
+import React, { useEffect, useState, useCallback, type JSX } from "react";
 import { supabase } from "../lib/supabase";
 import type { Blog } from "../../types/blog";
 import { BlogCard } from "../components/BlogCard";
@@ -26,43 +26,43 @@ export default function Home(): JSX.Element {
   const [showCreateModal, setShowCreateModal] = useState<boolean>(false);
   const [showLogoutModal, setShowLogoutModal] = useState<boolean>(false);
 
-  // Track if page buttons clicked, to control loading state display
   const [isPageChanging, setIsPageChanging] = useState<boolean>(false);
 
-  async function fetchBlogs(pageToFetch: number = page): Promise<void> {
-    // Only show loading for initial load or creating new blog, not for page navigation
-    if (!isPageChanging) {
-      setLoading(true);
-    }
-    setError(null);
+  const fetchBlogs = useCallback(
+    async (pageToFetch: number = page): Promise<void> => {
+      if (!isPageChanging) {
+        setLoading(true);
+      }
+      setError(null);
 
-    const from = (pageToFetch - 1) * PAGE_SIZE;
-    const to = from + PAGE_SIZE - 1;
+      const from = (pageToFetch - 1) * PAGE_SIZE;
+      const to = from + PAGE_SIZE - 1;
 
-    const {
-      data,
-      error: fetchError,
-      count,
-    } = await supabase
-      .from("blogs")
-      .select("*", { count: "exact" })
-      .order("created_at", { ascending: false })
-      .range(from, to);
+      const {
+        data,
+        error: fetchError,
+        count,
+      } = await supabase
+        .from("blogs")
+        .select("*", { count: "exact" })
+        .order("created_at", { ascending: false })
+        .range(from, to);
 
-    if (fetchError) {
-      setError(fetchError.message);
-      setBlogs([]);
-      setTotalCount(0);
-    } else {
-      setBlogs(data ?? []);
-      setTotalCount(count ?? 0);
-    }
+      if (fetchError) {
+        setError(fetchError.message);
+        setBlogs([]);
+        setTotalCount(0);
+      } else {
+        setBlogs(data ?? []);
+        setTotalCount(count ?? 0);
+      }
 
-    setLoading(false);
-    setIsPageChanging(false); // Reset page changing flag
-  }
+      setLoading(false);
+      setIsPageChanging(false);
+    },
+    [page, isPageChanging]
+  );
 
-  // When page changes via buttons, set isPageChanging to true, then fetch will run
   function onPageChange(newPage: number): void {
     if (newPage !== page) {
       setIsPageChanging(true);
@@ -70,10 +70,9 @@ export default function Home(): JSX.Element {
     }
   }
 
-  // Fetch blogs on page change
   useEffect(() => {
     void fetchBlogs(page);
-  }, [page]);
+  }, [page, fetchBlogs]);
 
   useEffect(() => {
     async function fetchUser(): Promise<void> {
@@ -116,7 +115,7 @@ export default function Home(): JSX.Element {
     setShowCreateModal(true);
   }
 
-  function handleLoginSuccess(_userId: string): void {
+  function handleLoginSuccess(): void {
     setShowLoginModal(false);
     void supabase.auth.getUser().then(({ data }) => {
       if (data.user) {
@@ -153,7 +152,7 @@ export default function Home(): JSX.Element {
             <button
               type='button'
               onClick={() => setShowLoginModal(true)}
-              className='text-blue-600 hover:underline'
+              className='bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700'
               style={{
                 position: "absolute",
                 right: "1.5em",
@@ -164,7 +163,9 @@ export default function Home(): JSX.Element {
             </button>
           )}
 
-          <h1 className='text-4xl font-bold'>Blog Posts</h1>
+          <h1 className='text-3xl font-bold text-gray-700 tracking-[1.2px] '>
+            Blog Posts
+          </h1>
         </div>
         <button
           onClick={handleCreateClick}

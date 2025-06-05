@@ -30,7 +30,8 @@ export default function CreateBlogModal({
 
       if (authError || !user) {
         setUnauthenticated(true);
-        setTimeout(onClose, 2000);
+        setAuthChecked(true);
+        // Do NOT auto-close modal when unauthenticated
         return;
       }
 
@@ -41,7 +42,7 @@ export default function CreateBlogModal({
     }
 
     void checkAuth();
-  }, [onClose]);
+  }, []);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
@@ -74,13 +75,11 @@ export default function CreateBlogModal({
       setError(supabaseError.message);
       return;
     }
-
-    // Clear form on success
     setTitle("");
     setContent("");
 
-    onBlogCreated(); // Trigger refresh of blog list
-    onClose(); // Close modal after creation
+    onBlogCreated();
+    onClose();
   }
 
   return (
@@ -91,12 +90,23 @@ export default function CreateBlogModal({
       aria-modal='true'
     >
       <div
-        className='bg-white rounded p-6 w-full max-w-md min-h-[480px] flex flex-col justify-between'
+        className='bg-white rounded p-6 w-full max-w-md min-h-[480px] flex flex-col justify-between relative'
         onClick={(e) => e.stopPropagation()}
       >
-        {!authChecked && unauthenticated ? (
+        {/* X close button */}
+        <button
+          type='button'
+          onClick={onClose}
+          className='absolute top-3 right-3 text-gray-500 hover:text-gray-700'
+          aria-label='Close modal'
+          disabled={loading}
+        >
+          &#x2715;
+        </button>
+
+        {unauthenticated && authChecked ? (
           <div className='flex flex-col justify-center items-center flex-1 text-center'>
-            <p className='text-red-600 font-semibold'>
+            <p className='text-gray-500 font-semibold'>
               Please login to create a blog.
             </p>
           </div>
