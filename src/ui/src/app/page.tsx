@@ -7,7 +7,6 @@ import { BlogCard } from "../components/BlogCard";
 import AuthModal from "../components/AuthModal";
 import CreateBlogModal from "../components/CreateBlogModal";
 import LogoutModal from "../components/LogoutModal";
-// import BlogList from "../components/BlogList";
 
 const PAGE_SIZE = 5;
 
