@@ -133,7 +133,7 @@ export default function Home(): JSX.Element {
 
   return (
     <>
-      <header className='max-w-[35em] flex justify-between items-center mx-auto pb-3'>
+      <header className='max-w-[35em] flex justify-between items-center mx-auto pb-4'>
         <div className='flex items-center mt-[6em]'>
           {user ? (
             <button
