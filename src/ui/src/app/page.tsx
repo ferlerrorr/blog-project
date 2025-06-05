@@ -27,12 +27,12 @@ export default function Home(): JSX.Element {
   const [showLogoutModal, setShowLogoutModal] = useState<boolean>(false);
 
   const [isPageChanging, setIsPageChanging] = useState<boolean>(false);
+  const [refreshKey, setRefreshKey] = useState<number>(0); // 👈 new refresh key
 
   const fetchBlogs = useCallback(
     async (pageToFetch: number = page): Promise<void> => {
-      if (!isPageChanging) {
-        setLoading(true);
-      }
+      if (!isPageChanging) setLoading(true);
+
       setError(null);
 
       const from = (pageToFetch - 1) * PAGE_SIZE;
@@ -53,8 +53,9 @@ export default function Home(): JSX.Element {
         setBlogs([]);
         setTotalCount(0);
       } else {
-        setBlogs(data ?? []);
+        setBlogs([...data]); // 👈 force new array reference
         setTotalCount(count ?? 0);
+        setRefreshKey((prev) => prev + 1); // 👈 trigger BlogCard list rerender
       }
 
       setLoading(false);
@@ -79,6 +80,7 @@ export default function Home(): JSX.Element {
       const {
         data: { user },
       } = await supabase.auth.getUser();
+
       if (user) {
         setUser({
           email: user.email ?? null,
@@ -101,13 +103,16 @@ export default function Home(): JSX.Element {
         } else {
           setUser(null);
         }
+
+        setPage(1);
+        void fetchBlogs(1);
       }
     );
 
     return () => {
       authListener?.subscription.unsubscribe();
     };
-  }, []);
+  }, [fetchBlogs]);
 
   const totalPages = Math.max(Math.ceil(totalCount / PAGE_SIZE), 1);
 
@@ -123,6 +128,8 @@ export default function Home(): JSX.Element {
           email: data.user.email ?? null,
           avatarUrl: data.user.user_metadata?.avatar_url ?? undefined,
         });
+        setPage(1);
+        void fetchBlogs(1);
       }
     });
   }
@@ -140,11 +147,7 @@ export default function Home(): JSX.Element {
               onClick={() => setShowLogoutModal(true)}
               title={user.email ?? ""}
               className='w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm'
-              style={{
-                position: "absolute",
-                right: "1.5em",
-                top: "1.2em",
-              }}
+              style={{ position: "absolute", right: "1.5em", top: "1.2em" }}
             >
               {user.email?.charAt(0).toUpperCase() ?? ""}
             </button>
@@ -153,17 +156,13 @@ export default function Home(): JSX.Element {
               type='button'
               onClick={() => setShowLoginModal(true)}
               className='bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700'
-              style={{
-                position: "absolute",
-                right: "1.5em",
-                top: "1.2em",
-              }}
+              style={{ position: "absolute", right: "1.5em", top: "1.2em" }}
             >
               Login
             </button>
           )}
 
-          <h1 className='text-3xl font-bold text-gray-700 tracking-[1.2px] '>
+          <h1 className='text-3xl font-bold text-gray-700 tracking-[1.2px]'>
             Blog Posts
           </h1>
         </div>
@@ -180,11 +179,14 @@ export default function Home(): JSX.Element {
         {loading && !isPageChanging && <p>Loading blogs...</p>}
         {error && <p className='text-red-600 font-semibold'>{error}</p>}
         {!loading && !error && blogs.length === 0 && <p>No blogs found.</p>}
-        <div className='grid gap-6'>
+
+        {/* 👇 force BlogCard rerender on refreshKey change */}
+        <div className='grid gap-6' key={refreshKey}>
           {blogs.map((blog) => (
-            <BlogCard key={blog.id} blog={blog} currentUserEmail={null} />
+            <BlogCard key={blog.id} blog={blog} />
           ))}
         </div>
+
         <div className='flex justify-center gap-4 mt-8'>
           <button
             disabled={page <= 1}

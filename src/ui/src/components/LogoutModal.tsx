@@ -16,6 +16,7 @@ export default function LogoutModal({
   async function handleLogout(): Promise<void> {
     setLoading(true);
     await supabase.auth.signOut();
+    localStorage.removeItem("userEmail");
     setLoading(false);
     onClose();
   }

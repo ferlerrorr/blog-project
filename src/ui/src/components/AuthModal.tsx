@@ -88,7 +88,8 @@ export default function AuthModal({
       setError(signInError?.message ?? "Failed to authenticate");
       return;
     }
-
+    // Save email to localStorage on login success
+    localStorage.setItem("userEmail", email);
     onLoginSuccess(signInData.user.id);
     onClose();
   }
