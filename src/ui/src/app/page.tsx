@@ -7,6 +7,7 @@ import { BlogCard } from "../components/BlogCard";
 import AuthModal from "../components/AuthModal";
 import CreateBlogModal from "../components/CreateBlogModal";
 import LogoutModal from "../components/LogoutModal";
+// import BlogList from "../components/BlogList";
 
 const PAGE_SIZE = 5;
 
@@ -27,10 +28,10 @@ export default function Home(): JSX.Element {
   const [showLogoutModal, setShowLogoutModal] = useState<boolean>(false);
 
   const [isPageChanging, setIsPageChanging] = useState<boolean>(false);
-  const [refreshKey, setRefreshKey] = useState<number>(0); // 👈 new refresh key
+  const [refreshKey, setRefreshKey] = useState<number>(0);
 
   const fetchBlogs = useCallback(
-    async (pageToFetch: number = page): Promise<void> => {
+    async (pageToFetch: number): Promise<void> => {
       if (!isPageChanging) setLoading(true);
 
       setError(null);
@@ -53,15 +54,15 @@ export default function Home(): JSX.Element {
         setBlogs([]);
         setTotalCount(0);
       } else {
-        setBlogs([...data]); // 👈 force new array reference
+        setBlogs([...data]);
         setTotalCount(count ?? 0);
-        setRefreshKey((prev) => prev + 1); // 👈 trigger BlogCard list rerender
+        setRefreshKey((prev) => prev + 1);
       }
 
       setLoading(false);
       setIsPageChanging(false);
     },
-    [page, isPageChanging]
+    [isPageChanging]
   );
 
   function onPageChange(newPage: number): void {
@@ -73,7 +74,7 @@ export default function Home(): JSX.Element {
 
   useEffect(() => {
     void fetchBlogs(page);
-  }, [page, fetchBlogs]);
+  }, [page]);
 
   useEffect(() => {
     async function fetchUser(): Promise<void> {
@@ -112,7 +113,7 @@ export default function Home(): JSX.Element {
     return () => {
       authListener?.subscription.unsubscribe();
     };
-  }, [fetchBlogs]);
+  }, []);
 
   const totalPages = Math.max(Math.ceil(totalCount / PAGE_SIZE), 1);
 
@@ -140,7 +141,7 @@ export default function Home(): JSX.Element {
 
   return (
     <>
-      <header className='max-w-[35em] flex justify-between items-center mx-auto pb-4'>
+      <header className='max-w-[35em] flex justify-between items-center mx-auto pb-5'>
         <div className='flex items-center mt-[6em]'>
           {user ? (
             <button
@@ -183,7 +184,17 @@ export default function Home(): JSX.Element {
         {/* 👇 force BlogCard rerender on refreshKey change */}
         <div className='grid gap-6' key={refreshKey}>
           {blogs.map((blog) => (
-            <BlogCard key={blog.id} blog={blog} />
+            <BlogCard
+              key={blog.id}
+              blog={blog}
+              onEditSuccess={() => {
+                void fetchBlogs(page);
+              }}
+              onDelete={(id: string) => {
+                console.log(`Delete blog with id: ${id}`);
+                setBlogs((prev) => prev.filter((b) => b.id !== id));
+              }}
+            />
           ))}
         </div>
 

@@ -90,7 +90,7 @@ export default function CreateBlogModal({
       aria-modal='true'
     >
       <div
-        className='bg-white rounded p-6 w-full max-w-md min-h-[480px] flex flex-col justify-between relative'
+        className='bg-white rounded p-6 w-full max-w-md min-h-[330px] flex flex-col justify-between relative'
         onClick={(e) => e.stopPropagation()}
       >
         {/* X close button */}
@@ -112,13 +112,15 @@ export default function CreateBlogModal({
           </div>
         ) : (
           <>
-            <h2 className='text-2xl font-bold mb-4'>Create New Blog</h2>
-            <form
-              onSubmit={handleSubmit}
-              className='space-y-4 flex-1 flex flex-col justify-between'
-            >
-              <div className='space-y-4'>
+            <div className='space-y-2'>
+              <h1 className='text-2xl font-bold mb-4'>Create New Blog</h1>
+
+              <form
+                onSubmit={handleSubmit}
+                className='space-y-3 flex flex-col w-full max-w-3xl'
+              >
                 {error && <p className='text-red-600 font-semibold'>{error}</p>}
+
                 <div>
                   <label htmlFor='title' className='block font-medium mb-1'>
                     Title
@@ -134,6 +136,7 @@ export default function CreateBlogModal({
                     autoFocus
                   />
                 </div>
+
                 <div>
                   <label htmlFor='content' className='block font-medium mb-1'>
                     Content
@@ -147,25 +150,26 @@ export default function CreateBlogModal({
                     required
                   />
                 </div>
-              </div>
-              <div className='flex justify-end gap-4 pt-4'>
-                <button
-                  type='button'
-                  onClick={onClose}
-                  disabled={loading}
-                  className='px-4 py-2 rounded border border-gray-300 hover:bg-gray-100'
-                >
-                  Cancel
-                </button>
-                <button
-                  type='submit'
-                  disabled={loading}
-                  className='bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50'
-                >
-                  {loading ? "Creating..." : "Create Blog"}
-                </button>
-              </div>
-            </form>
+
+                <div className='flex justify-end gap-4 pt-2'>
+                  <button
+                    type='button'
+                    onClick={onClose}
+                    disabled={loading}
+                    className='px-4 py-2 rounded border border-gray-300 hover:bg-gray-100'
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type='submit'
+                    disabled={loading}
+                    className='bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50'
+                  >
+                    {loading ? "Creating..." : "Create Blog"}
+                  </button>
+                </div>
+              </form>
+            </div>
           </>
         )}
       </div>
