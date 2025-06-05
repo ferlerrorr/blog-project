@@ -74,6 +74,7 @@ export default function AuthModal({
         setError("User profile creation failed");
         return;
       }
+      localStorage.setItem("userEmail", email);
     }
 
     const { data: signInData, error: signInError } =
@@ -88,7 +89,7 @@ export default function AuthModal({
       setError(signInError?.message ?? "Failed to authenticate");
       return;
     }
-    // Save email to localStorage on login success
+
     localStorage.setItem("userEmail", email);
     onLoginSuccess(signInData.user.id);
     onClose();
